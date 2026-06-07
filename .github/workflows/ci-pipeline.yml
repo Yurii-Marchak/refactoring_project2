@@ -53,7 +53,7 @@ jobs:
 
     # 6. Сканування коду статичним аналізатором SonarCloud
     - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
+      uses: SonarSource/sonarqube-scan-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Надається GitHub автоматично
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Ваш секрет із налаштувань репозиторію

@@ -19,3 +19,8 @@ class ISubscriptionRepository(ABC):
     def add_subscription(self, subscription: UserSubscription) -> UserSubscription:
         """Add a new user subscription."""
         pass
+    @abstractmethod
+    def get_all(self) -> List[UserSubscription]:
+        """Retrieve all subscriptions in the system."""
+        pass
+    

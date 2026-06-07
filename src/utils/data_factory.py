@@ -1,4 +1,4 @@
-import random
+import secrets
 from uuid import uuid4
 from decimal import Decimal
 from datetime import datetime, timedelta
@@ -155,7 +155,8 @@ class DataSeeder:
                 id=uuid4(),
                 user_subscription_id=sub.id,
                 month_year=month,
-                frequency_1_to_7=random.randint(freq_range[0], freq_range[1]),
-                necessity_1_to_5=random.randint(nec_range[0], nec_range[1])
+                # Використовуємо secrets.choice(range(start, end + 1)) замість randint
+                frequency_1_to_7=secrets.choice(range(freq_range[0], freq_range[1] + 1)),
+                necessity_1_to_5=secrets.choice(range(nec_range[0], nec_range[1] + 1))
             )
             self.feedback_repo.save_feedback(feedback)

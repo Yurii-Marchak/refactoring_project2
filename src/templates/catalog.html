@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог сервісів - SubOptima{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+    <h2 class="mb-0"><i class="bi bi-grid-fill text-primary"></i> Каталог сервісів</h2>
+</div>
+
+{% if not current_user_id %}
+<div class="alert alert-info shadow-sm mb-4">
+    <i class="bi bi-info-circle-fill"></i> Оберіть користувача у меню вище, щоб мати змогу підписуватися на сервіси.
+</div>
+{% endif %}
+
+{% set categories = ["streaming", "cloud", "gaming", "education"] %}
+{% set cat_names = {
+    "streaming": "Стрімінгові сервіси", 
+    "cloud": "Програми та хмарні сховища", 
+    "gaming": "Ігри", 
+    "education": "Освіта та професійні інструменти"
+} %}
+
+{% for cat in categories %}
+    <h4 class="mt-5 text-secondary"><i class="bi bi-bookmark-star"></i> {{ cat_names[cat] }}</h4>
+    <div class="row row-cols-1 row-cols-md-4 g-4 mt-1">
+        
+        {% for service in services %}
+            {% set s_cat = service.category.value if service.category.value else service.category %}
+            
+            {% if s_cat == cat %}
+            <div class="col">
+                <div class="card h-100 shadow-sm border-0 bg-white rounded-3">
+                    <div class="card-body text-center mt-3">
+                        <div class="mb-3">
+                            <i class="bi bi-hdd-network text-primary" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h5 class="card-title fw-bold">{{ service.name }}</h5>
+                        <p class="card-text text-muted small mb-3">Тарифів: {{ service.tiers|length }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0 text-center pb-4">
+                        <button type="button" class="btn btn-outline-success w-100 rounded-pill fw-semibold" 
+                                data-bs-toggle="modal" data-bs-target="#modal-{{ service.id }}"
+                                {% if not current_user_id %}disabled{% endif %}>
+                            <i class="bi bi-cart-plus"></i> Підписатися
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="modal-{{ service.id }}" tabindex="-1" aria-labelledby="modalLabel-{{ service.id }}" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="modalLabel-{{ service.id }}">Оформлення: {{ service.name }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body p-4">
+                    <form id="form-{{ service.id }}">
+                        <input type="hidden" name="service_id" value="{{ service.id }}">
+                        <input type="hidden" name="user_id" value="{{ current_user_id }}">
+                        
+                        <div class="mb-3">
+                            <label for="tierSelect-{{ service.id }}" class="form-label fw-semibold">Оберіть тарифний план:</label>
+                            <select class="form-select form-select-lg" id="tierSelect-{{ service.id }}" name="tier_name" required>
+                                <option value="" disabled selected>-- Оберіть тариф --</option>
+                                {% for tier in service.tiers %}
+                                    <option value="{{ tier.name }}">{{ tier.name }} — ${{ tier.price }} / міс</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+                  </div>
+                  <div class="modal-footer border-top-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                    <button type="button" class="btn btn-success px-4" onclick="submitSubscription('{{ service.id }}')">Підтвердити</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+        
+    </div>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function submitSubscription(serviceId) {
+        const form = document.getElementById('form-' + serviceId);
+        const userId = form.user_id.value;
+        const tierName = form.tier_name.value;
+
+        if (!tierName) {
+            alert("Будь ласка, оберіть тарифний план.");
+            return;
+        }
+
+        const payload = {
+            user_id: userId,
+            service_id: serviceId,
+            tier_name: tierName
+        };
+
+        try {
+            const response = await fetch('/subscriptions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                // Закриваємо модалку Bootstrap
+                var modalEl = document.getElementById('modal-' + serviceId);
+                var modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                
+                alert("Підписку успішно оформлено!");
+                // Перенаправляємо користувача на сторінку активних підписок
+                window.location.href = '/web/subscriptions'; 
+            } else {
+                const err = await response.json();
+                alert("Помилка: " + (err.detail || "Не вдалося оформити підписку"));
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Сталася системна помилка при зв'язку з сервером.");
+        }
+    }
+</script>
+{% endblock %}

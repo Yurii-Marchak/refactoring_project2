@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Дашборд - SubOptima{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <h1 class="display-4 fw-bold text-primary">Ласкаво просимо до SubOptima!</h1>
+        <p class="lead text-muted">Ваш особистий помічник з аналізу та оптимізації цифрових підписок.</p>
+    </div>
+</div>
+
+{% if current_user_id %}
+    <div class="row mt-5 justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-body text-center p-5">
+                    <h3 class="card-title mb-4"><i class="bi bi-person-circle fs-1 text-secondary"></i><br>Ваш Профіль</h3>
+                    
+                    {% for u in users_list %}
+                        {% if u.id|string == current_user_id %}
+                            <p class="fs-5">Користувач: <strong class="text-dark">{{ u.email }}</strong></p>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <hr class="my-4">
+                    
+                    <div class="mb-4">
+                        <h1 class="text-success fw-bold display-3">{{ subs_count }}</h1>
+                        <span class="text-muted text-uppercase fw-semibold">Активних підписок</span>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="/web/catalog" class="btn btn-outline-primary px-4 rounded-pill">
+                            <i class="bi bi-plus-circle"></i> Додати підписку
+                        </a>
+                        <a href="/web/analytics" class="btn btn-success px-4 rounded-pill">
+                            <i class="bi bi-graph-up"></i> Отримати поради
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="row mt-5">
+        <div class="col-md-8 mx-auto">
+            <div class="alert alert-warning text-center shadow-sm rounded-3 py-4 border-warning">
+                <i class="bi bi-exclamation-triangle-fill fs-2 text-warning d-block mb-2"></i>
+                <h5 class="alert-heading">Авторизація не виконана</h5>
+                <p class="mb-0">Будь ласка, оберіть користувача у верхньому навігаційному меню (Navbar), щоб переглянути особисту статистику та керувати підписками.</p>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

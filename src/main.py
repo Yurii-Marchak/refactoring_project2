@@ -1,3 +1,7 @@
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+import os
+
 from pymongo import MongoClient
 from src.config import settings
 from src.storage.mongodb.user_repository import MongoUserRepository
@@ -36,6 +40,11 @@ app = FastAPI(
     description="Сервіс аналізу та оптимізації витрат на цифрові підписки", 
     version="1.0.0"
 )
+
+# --- Налаштування веб-інтерфейсу (Jinja2 та Статика) ---
+# Створюємо абсолютний шлях до папок (щоб уникнути помилок при запусках з різних директорій)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
 
 # --- ВИБІР СЕРЕДОВИЩА ТА ІНІЦІАЛІЗАЦІЯ БД ---
 if settings.STORAGE_TYPE == "mongodb":
@@ -155,3 +164,6 @@ def get_recommendations(user_id: UUID, use_case=Depends(get_recommendations_use_
         return use_case.execute(user_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    
+from src.routers.web import router as web_router
+app.include_router(web_router)

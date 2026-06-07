@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Мої підписки - SubOptima{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+    <h2 class="mb-0"><i class="bi bi-list-check text-primary"></i> Мої активні підписки</h2>
+    <a href="/web/catalog" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-plus-lg"></i> Додати нову
+    </a>
+</div>
+
+{% if not current_user_id %}
+    <div class="alert alert-info shadow-sm">
+        <i class="bi bi-info-circle-fill"></i> Будь ласка, оберіть користувача для перегляду підписок.
+    </div>
+{% elif subscriptions|length == 0 %}
+    <div class="alert alert-warning shadow-sm text-center py-4">
+        <i class="bi bi-inbox fs-1 text-warning d-block mb-3"></i>
+        У вас ще немає активних підписок. Перейдіть до каталогу, щоб щось додати!
+    </div>
+{% else %}
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th scope="col" class="ps-4">Сервіс</th>
+                        <th scope="col">Тарифний план</th>
+                        <th scope="col">Дата підключення</th>
+                        <th scope="col" class="text-center">Дія</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in subscriptions %}
+                        {% set s_id = sub.service_id|string %}
+                        {% set service = services_map.get(s_id) %}
+                        <tr>
+                            <td class="ps-4 fw-semibold text-dark">
+                                <i class="bi bi-hdd-network text-secondary me-2"></i> 
+                                {{ service.name if service else 'Невідомий сервіс' }}
+                            </td>
+                            <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1">{{ sub.tier_name }}</span></td>
+                            <td>{{ sub.start_date.strftime('%d.%m.%Y') }}</td>
+                            <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#feedbackModal-{{ sub.id }}">
+                                    <i class="bi bi-star-half"></i> Залишити відгук
+                                </button>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="feedbackModal-{{ sub.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-light">
+                                        <h5 class="modal-title fw-bold">Відгук: {{ service.name if service else '' }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body p-4">
+                                        <form id="form-feedback-{{ sub.id }}">
+                                            <input type="hidden" name="sub_id" value="{{ sub.id }}">
+                                            
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold">Місяць використання</label>
+                                                <input type="month" class="form-control" name="month_year" required>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <label class="form-label fw-semibold d-flex justify-content-between">
+                                                    <span>Частота використання (1-7)</span>
+                                                    <span id="freq-val-{{ sub.id }}" class="badge bg-primary">4</span>
+                                                </label>
+                                                <input type="range" class="form-range" name="frequency" min="1" max="7" value="4" 
+                                                       oninput="document.getElementById('freq-val-{{ sub.id }}').innerText = this.value">
+                                                <div class="d-flex justify-content-between text-muted small">
+                                                    <span>Майже не заходжу</span>
+                                                    <span>Кожен день</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold d-flex justify-content-between">
+                                                    <span>Необхідність сервісу (1-5)</span>
+                                                    <span id="nec-val-{{ sub.id }}" class="badge bg-success">3</span>
+                                                </label>
+                                                <input type="range" class="form-range" name="necessity" min="1" max="5" value="3"
+                                                       oninput="document.getElementById('nec-val-{{ sub.id }}').innerText = this.value">
+                                                <div class="d-flex justify-content-between text-muted small">
+                                                    <span>Можу жити без нього</span>
+                                                    <span>Критично важливий</span>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer border-top-0">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                                        <button type="button" class="btn btn-success px-4" onclick="submitFeedback('{{ sub.id }}')">Зберегти</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Встановлюємо поточний місяць за замовчуванням у всі поля типу month
+    document.addEventListener('DOMContentLoaded', () => {
+        const now = new Date();
+        const monthString = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        document.querySelectorAll('input[type="month"]').forEach(el => {
+            if (!el.value) el.value = monthString;
+        });
+    });
+
+    async function submitFeedback(subId) {
+        const form = document.getElementById('form-feedback-' + subId);
+        
+        const payload = {
+            user_subscription_id: form.sub_id.value,
+            month_year: form.month_year.value,
+            frequency_1_to_7: parseInt(form.frequency.value),
+            necessity_1_to_5: parseInt(form.necessity.value)
+        };
+
+        try {
+            const response = await fetch('/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                var modalEl = document.getElementById('feedbackModal-' + subId);
+                var modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                alert("Дякуємо! Ваш відгук враховано для подальшої аналітики.");
+            } else {
+                const err = await response.json();
+                alert("Помилка: " + (err.detail || "Не вдалося зберегти відгук"));
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Сталася помилка при зв'язку з сервером.");
+        }
+    }
+</script>
+{% endblock %}

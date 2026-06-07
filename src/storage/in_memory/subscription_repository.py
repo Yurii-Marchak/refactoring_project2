@@ -27,3 +27,6 @@ class InMemorySubscriptionRepository(ISubscriptionRepository):
         str_id = str(subscription.id)
         self._storage[str_id] = copy.deepcopy(subscription)
         return copy.deepcopy(self._storage[str_id])
+
+    def get_all(self) -> List[UserSubscription]:
+        return [copy.deepcopy(sub) for sub in self._storage.values()]

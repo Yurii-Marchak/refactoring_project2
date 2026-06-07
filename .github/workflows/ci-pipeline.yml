@@ -1,0 +1,59 @@
+name: CI/CD Pipeline & Quality Gate
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  test-and-analyze:
+    name: Build, Test and SonarCloud Analysis
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Клонування репозиторію
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Потрібно для точного аналізу SonarCloud (blame інформація)
+
+    # 2. Налаштування середовища Python
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    # 3. Встановлення залежностей
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install fastapi uvicorn pymongo motor pytest pytest-cov mockito
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    # 4. Запуск тестів та генерація XML/HTML звітів
+    # Генерує junit.xml для тестів та coverage.xml/html для покриття
+    - name: Run Tests with Coverage
+      env:
+        PYTHONPATH: src
+      run: |
+        pytest --junitxml=junit.xml --cov=src --cov-report=xml:coverage.xml --cov-report=html:htmlcov tests/
+
+    # 5. Збереження HTML/XML звітів як CI/CD Артефактів (ZIP доступний для завантаження)
+    - name: Upload Test & Coverage HTML Reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-and-coverage-artifacts
+        path: |
+          htmlcov/
+          junit.xml
+          coverage.xml
+        retention-days: 7
+
+    # 6. Сканування коду статичним аналізатором SonarCloud
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Надається GitHub автоматично
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Ваш секрет із налаштувань репозиторію

@@ -1,3 +1,6 @@
+import re
+from uuid import uuid4
+from datetime import datetime
 import pytest
 from src.utils.data_factory import ServiceFactory, DataSeeder
 from src.models.service import ServiceCategory
@@ -58,3 +61,83 @@ def test_data_seeder_populates_repositories():
     sample_fb = all_feedback[0]
     assert 1 <= sample_fb.frequency_1_to_7 <= 7
     assert 1 <= sample_fb.necessity_1_to_5 <= 5
+
+def test_generate_last_12_months_format_and_length():
+    """Перевірка, що метод генерує рівно 12 дат у форматі YYYY-MM."""
+    seeder = DataSeeder(
+        InMemoryUserRepository(), 
+        InMemoryServiceRepository(), 
+        InMemorySubscriptionRepository(), 
+        InMemoryFeedbackRepository()
+    )
+    
+    months = seeder._generate_last_12_months()
+    
+    assert len(months) == 12
+    
+    # Використовуємо регулярний вираз для перевірки формату YYYY-MM
+    pattern = re.compile(r"^\d{4}-\d{2}$")
+    for month in months:
+        assert pattern.match(month) is not None, f"Формат місяця {month} не відповідає YYYY-MM"
+
+def test_data_seeder_safe_multiple_calls():
+    """
+    Перевірка, що Seeder не падає при повторному виклику.
+    Оскільки ми щоразу генеруємо нові UUID, він просто додасть нові записи,
+    але головне — система не повинна видавати винятків.
+    """
+    user_repo = InMemoryUserRepository()
+    service_repo = InMemoryServiceRepository()
+    sub_repo = InMemorySubscriptionRepository()
+    feedback_repo = InMemoryFeedbackRepository()
+
+    seeder = DataSeeder(user_repo, service_repo, sub_repo, feedback_repo)
+
+    # Перший запуск
+    seeder.seed_all()
+    users_count_first = len(user_repo._storage)
+    
+    # Другий запуск (перевірка на відсутність крашів)
+    try:
+        seeder.seed_all()
+    except Exception as e:
+        pytest.fail(f"Seeder впав при спробі повторного запуску: {e}")
+        
+    # Перевіряємо, що дані дійсно додалися
+    users_count_second = len(user_repo._storage)
+    assert users_count_second > users_count_first
+
+def test_create_subscription_with_feedback_internal_logic():
+    """
+    Пряме тестування внутрішнього методу для збільшення покриття рядків.
+    Перевіряємо, чи правильно створюється підписка і прив'язуються відгуки.
+    """
+    user_repo = InMemoryUserRepository()
+    service_repo = InMemoryServiceRepository()
+    sub_repo = InMemorySubscriptionRepository()
+    feedback_repo = InMemoryFeedbackRepository()
+
+    seeder = DataSeeder(user_repo, service_repo, sub_repo, feedback_repo)
+    services = ServiceFactory.generate_all_services()
+    test_user_id = uuid4()
+    
+    # Викликаємо метод напряму для 3 місяців
+    test_months = ["2026-03", "2026-04", "2026-05"]
+    seeder._create_subscription_with_feedback(
+        user_id=test_user_id,
+        service=services[0], # Наприклад, Netflix
+        tier_name="Premium",
+        start_date=datetime.now(),
+        months=test_months,
+        freq_range=(1, 7),
+        nec_range=(1, 5)
+    )
+    
+    # Перевіряємо, чи збереглася підписка
+    subs = sub_repo.get_user_subscriptions(test_user_id)
+    assert len(subs) == 1
+    assert subs[0].tier_name == "Premium"
+    
+    # Перевіряємо, чи створилося рівно 3 відгуки
+    feedbacks = feedback_repo.get_feedback_history(subs[0].id)
+    assert len(feedbacks) == 3

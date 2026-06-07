@@ -120,7 +120,7 @@ def analytics(
         except ValueError:
             pass 
 
-    return templates.TemplateResponse(request=request, name="analytics.html", сontext={
+    return templates.TemplateResponse(request=request, name="analytics.html", context={
         "request": request,
         "users_list": users_list,
         "current_user_id": user_id,

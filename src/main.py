@@ -41,10 +41,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# --- Налаштування веб-інтерфейсу (Jinja2 та Статика) ---
-# Створюємо абсолютний шлях до папок (щоб уникнути помилок при запусках з різних директорій)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-app.mount("/static", StaticFiles(directory=os.path.join(BASE_DIR, "static")), name="static")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+# Додаємо автоматичне створення папки
+os.makedirs(STATIC_DIR, exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # --- ВИБІР СЕРЕДОВИЩА ТА ІНІЦІАЛІЗАЦІЯ БД ---
 if settings.STORAGE_TYPE == "mongodb":

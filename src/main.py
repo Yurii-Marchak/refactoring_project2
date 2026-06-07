@@ -1,3 +1,10 @@
+from pymongo import MongoClient
+from src.config import settings
+from src.storage.mongodb.user_repository import MongoUserRepository
+from src.storage.mongodb.service_repository import MongoServiceRepository
+from src.storage.mongodb.subscription_repository import MongoSubscriptionRepository
+from src.storage.mongodb.feedback_repository import MongoFeedbackRepository
+
 from fastapi import FastAPI, Depends, HTTPException
 from typing import List
 from uuid import UUID, uuid4
@@ -30,15 +37,31 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# --- Глобальні екземпляри (Singletons) для In-Memory БД ---
-user_repo_instance = InMemoryUserRepository()
-service_repo_instance = InMemoryServiceRepository()
-subscription_repo_instance = InMemorySubscriptionRepository()
-feedback_repo_instance = InMemoryFeedbackRepository()
+# --- ВИБІР СЕРЕДОВИЩА ТА ІНІЦІАЛІЗАЦІЯ БД ---
+if settings.STORAGE_TYPE == "mongodb":
+    print("Starting in MONGODB mode...")
+    client = MongoClient(settings.MONGO_URI)
+    db = client[settings.MONGO_DB_NAME]
+    
+    user_repo_instance = MongoUserRepository(db.users)
+    service_repo_instance = MongoServiceRepository(db.services)
+    subscription_repo_instance = MongoSubscriptionRepository(db.subscriptions)
+    feedback_repo_instance = MongoFeedbackRepository(db.feedbacks)
+    
+    # Генеруємо початкові дані тільки якщо база порожня
+    if db.services.count_documents({}) == 0:
+        seeder = DataSeeder(user_repo_instance, service_repo_instance, subscription_repo_instance, feedback_repo_instance)
+        seeder.seed_all()
+else:
+    print("Starting in IN-MEMORY mode...")
+    user_repo_instance = InMemoryUserRepository()
+    service_repo_instance = InMemoryServiceRepository()
+    subscription_repo_instance = InMemorySubscriptionRepository()
+    feedback_repo_instance = InMemoryFeedbackRepository()
+    
+    seeder = DataSeeder(user_repo_instance, service_repo_instance, subscription_repo_instance, feedback_repo_instance)
+    seeder.seed_all()
 
-# Автоматичне наповнення бази 16-ма сервісами та 3-ма користувачами при старті
-seeder = DataSeeder(user_repo_instance, service_repo_instance, subscription_repo_instance, feedback_repo_instance)
-seeder.seed_all()
 
 # --- Dependency Providers ---
 def get_user_repository():

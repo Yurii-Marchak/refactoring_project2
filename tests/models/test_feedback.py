@@ -23,7 +23,7 @@ def test_usage_feedback_invalid_month_year():
     with pytest.raises(ValidationError):
         UsageFeedback(
             user_subscription_id=uuid4(),
-            month_year="06-2026", # Invalid format
+            month_year="06-2026",
             frequency_1_to_7=5,
             necessity_1_to_5=4
         )
@@ -33,7 +33,7 @@ def test_usage_feedback_invalid_frequency():
         UsageFeedback(
             user_subscription_id=uuid4(),
             month_year="2026-06",
-            frequency_1_to_7=8, # Out of bounds
+            frequency_1_to_7=8,
             necessity_1_to_5=4
         )
         
@@ -41,7 +41,7 @@ def test_usage_feedback_invalid_frequency():
         UsageFeedback(
             user_subscription_id=uuid4(),
             month_year="2026-06",
-            frequency_1_to_7=0, # Out of bounds
+            frequency_1_to_7=0,
             necessity_1_to_5=4
         )
 
@@ -51,5 +51,5 @@ def test_usage_feedback_invalid_necessity():
             user_subscription_id=uuid4(),
             month_year="2026-06",
             frequency_1_to_7=5,
-            necessity_1_to_5=6 # Out of bounds
+            necessity_1_to_5=6
         )

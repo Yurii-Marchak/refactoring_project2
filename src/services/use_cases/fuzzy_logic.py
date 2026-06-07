@@ -17,13 +17,11 @@ class FuzzyUtilityCalculator:
 
         total_score = 0.0
         for fb in feedbacks:
-            # Normalize inputs to a 0.0 - 1.0 scale
+
             freq_norm = (fb.frequency_1_to_7 - 1) / 6.0
             nec_norm = (fb.necessity_1_to_5 - 1) / 4.0
 
-            # Apply fuzzy rules via weighting:
-            # Necessity represents a stronger personal tie (60% weight)
-            # Frequency represents pure statistical usage (40% weight)
+
             score = (freq_norm * 0.4 + nec_norm * 0.6) * 100
             total_score += score
 

@@ -7,9 +7,6 @@ from src.models.user import User
 from src.models.service import Service, ServiceCategory, SubscriptionTier
 from src.models.feedback import UsageFeedback
 
-# ==========================================
-# ПОЗИТИВНІ ТЕСТИ (Успішне створення)
-# ==========================================
 
 def test_create_user_success():
     user_id = uuid4()
@@ -49,9 +46,6 @@ def test_create_usage_feedback_success():
     assert feedback.frequency_1_to_7 == 5
     assert feedback.necessity_1_to_5 == 4
 
-# ==========================================
-# НЕГАТИВНІ ТЕСТИ (Перевірка валідації Pydantic)
-# ==========================================
 
 def test_subscription_tier_negative_price():
     """Перевірка, що не можна створити тариф із від'ємною ціною (ge=0)."""
@@ -84,11 +78,11 @@ def test_usage_feedback_necessity_out_of_bounds(invalid_nec):
         )
 
 @pytest.mark.parametrize("invalid_date", [
-    "2026/05",   # Неправильний розділювач
-    "05-2026",   # Неправильний порядок
-    "2026-5",    # Немає нуля перед цифрою місяця
-    "26-05",     # Рік із двох цифр
-    "text",      # Взагалі не дата
+    "2026/05",
+    "05-2026",
+    "2026-5",
+    "26-05",
+    "text",
 ])
 def test_usage_feedback_invalid_month_year(invalid_date):
     """Перевірка регулярного виразу для формату YYYY-MM."""

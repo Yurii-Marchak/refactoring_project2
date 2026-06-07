@@ -34,12 +34,11 @@ def base_subscription(base_service):
         active=True
     )
 
-# --- Strategy Tests ---
 
 def test_streaming_strategy_high_score(base_subscription, base_service):
     strategy = StreamingOptimizationStrategy()
     result = strategy.analyze(base_subscription, base_service, 85.0)
-    assert result is None  # Highly active, no change needed
+    assert result is None
 
 def test_streaming_strategy_low_score_cancel(base_subscription, base_service):
     strategy = StreamingOptimizationStrategy()
@@ -53,12 +52,11 @@ def test_streaming_strategy_medium_score_downgrade(base_subscription, base_servi
     result = strategy.analyze(base_subscription, base_service, 55.0)
     assert result is not None
     assert "Перейти на дешевший тариф 'Basic'" in result.action
-    assert result.savings == Decimal("10.00")  # 15.99 - 5.99
+    assert result.savings == Decimal("10.00")
 
-# --- Orchestrator (Use Case) Tests ---
 
 def test_generate_recommendations_success(base_subscription, base_service):
-    # Arrange
+
     user_id = base_subscription.user_id
     mock_user = User(id=user_id, email="test@test.com")
     
@@ -72,10 +70,10 @@ def test_generate_recommendations_success(base_subscription, base_service):
     mock_service_repo.get_all.return_value = [base_service]
     
     mock_feedback_repo = Mock()
-    # We don't need actual feedback records if we mock the calculator
+
     
     mock_fuzzy = Mock(spec=FuzzyUtilityCalculator)
-    mock_fuzzy.calculate_utility.return_value = 25.0  # Force a "cancel" recommendation
+    mock_fuzzy.calculate_utility.return_value = 25.0
 
     use_case = GenerateRecommendationsUseCase(
         user_repo=mock_user_repo,
@@ -85,10 +83,10 @@ def test_generate_recommendations_success(base_subscription, base_service):
         fuzzy_calculator=mock_fuzzy
     )
 
-    # Act
+
     recommendations = use_case.execute(user_id)
 
-    # Assert
+
     assert len(recommendations) == 1
     rec = recommendations[0]
     assert rec.service_name == "TestFlix"

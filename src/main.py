@@ -14,23 +14,23 @@ from typing import List
 from uuid import UUID, uuid4
 from datetime import datetime
 
-# Domain Models
+
 from src.models.user import User
 from src.models.service import Service
 from src.models.subscription import UserSubscription
 from src.models.feedback import UsageFeedback
 
-# Schemas (DTOs)
+
 from src.schemas.subscription_schema import AddSubscriptionRequest, SubscriptionResponse
 from src.schemas.recommendation_schema import RecommendationResponse
 
-# Repositories (Ports & In-Memory Adapters)
+
 from src.storage.in_memory.user_repository import InMemoryUserRepository
 from src.storage.in_memory.service_repository import InMemoryServiceRepository
 from src.storage.in_memory.subscription_repository import InMemorySubscriptionRepository
 from src.storage.in_memory.feedback_repository import InMemoryFeedbackRepository
 
-# Use Cases & Utilities
+
 from src.services.use_cases.fuzzy_logic import FuzzyUtilityCalculator
 from src.services.use_cases.recommendation_use_case import GenerateRecommendationsUseCase
 from src.utils.data_factory import DataSeeder
@@ -44,12 +44,12 @@ app = FastAPI(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
-# Додаємо автоматичне створення папки
+
 os.makedirs(STATIC_DIR, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# --- ВИБІР СЕРЕДОВИЩА ТА ІНІЦІАЛІЗАЦІЯ БД ---
+
 if settings.STORAGE_TYPE == "mongodb":
     print("Starting in MONGODB mode...")
     client = MongoClient(settings.MONGO_URI)
@@ -60,7 +60,7 @@ if settings.STORAGE_TYPE == "mongodb":
     subscription_repo_instance = MongoSubscriptionRepository(db.subscriptions)
     feedback_repo_instance = MongoFeedbackRepository(db.feedbacks)
     
-    # Генеруємо початкові дані тільки якщо база порожня
+
     if db.services.count_documents({}) == 0:
         seeder = DataSeeder(user_repo_instance, service_repo_instance, subscription_repo_instance, feedback_repo_instance)
         seeder.seed_all()
@@ -75,7 +75,7 @@ else:
     seeder.seed_all()
 
 
-# --- Dependency Providers ---
+
 def get_user_repository():
     return user_repo_instance
 
@@ -106,7 +106,7 @@ def get_recommendations_use_case(
         fuzzy_calculator=calc
     )
 
-# --- Ендпоінти (Endpoints) ---
+
 
 @app.get("/health", tags=["System"])
 def health_check():
@@ -131,13 +131,13 @@ def get_services(service_repo=Depends(get_service_repository)):
 @app.post("/subscriptions", response_model=SubscriptionResponse, status_code=201, tags=["Subscriptions"])
 def add_subscription(request: AddSubscriptionRequest, sub_repo=Depends(get_subscription_repository), srv_repo=Depends(get_service_repository)):
     """Додати нову підписку для користувача на основі обраного сервісу та тарифу."""
-    # Перевіряємо, чи існує такий сервіс в базі
+
     all_services = {str(s.id): s for s in srv_repo.get_all()}
     service = all_services.get(str(request.service_id))
     if not service:
         raise HTTPException(status_code=404, detail="Обраний цифровий сервіс не знайдено.")
 
-    # Перевіряємо, чи існує такий тариф у сервісі
+
     tier_exists = any(t.name.lower() == request.tier_name.lower() for t in service.tiers)
     if not tier_exists:
         raise HTTPException(status_code=400, detail=f"Тариф '{request.tier_name}' відсутній для сервісу {service.name}.")

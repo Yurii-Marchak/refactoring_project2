@@ -8,14 +8,14 @@ from src.models.subscription import UserSubscription
 from src.services.use_cases.price_observer import PriceChangeSubject, UserNotificationObserver
 
 def test_price_change_notifies_affected_users():
-    # Arrange
+
     service_id = uuid4()
     tier_name = "Premium"
     new_price = Decimal("15.99")
     
     user1_id = uuid4()
     user2_id = uuid4()
-    user3_id = uuid4() # Subscribed to a different tier, shouldn't be notified
+    user3_id = uuid4()
 
     subs = [
         UserSubscription(user_id=user1_id, service_id=service_id, tier_name=tier_name, start_date=datetime.now(), active=True),
@@ -32,15 +32,15 @@ def test_price_change_notifies_affected_users():
     observer = UserNotificationObserver(mock_sub_repo, mock_notif_service)
     subject.attach(observer)
 
-    # Act
+
     subject.change_price(service_id, tier_name, new_price)
 
-    # Assert
+
     assert mock_notif_service.send_notification.call_count == 2
     
     expected_message = f"Увага! Вартість вашого тарифу '{tier_name}' змінилася. Нова ціна: {new_price}."
     
-    # Ensure user1 and user2 got the notification, but user3 did not
+
     mock_notif_service.send_notification.assert_any_call(user1_id, expected_message)
     mock_notif_service.send_notification.assert_any_call(user2_id, expected_message)
 

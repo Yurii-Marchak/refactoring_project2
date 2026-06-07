@@ -17,7 +17,7 @@ def test_add_subscription_request_valid():
 
 def test_add_subscription_request_invalid_empty_tier():
     with pytest.raises(ValidationError):
-        # tier_name cannot be empty due to min_length=1
+
         AddSubscriptionRequest(
             user_id=uuid4(), 
             service_id=uuid4(), 
@@ -25,7 +25,7 @@ def test_add_subscription_request_invalid_empty_tier():
         )
 
 def test_recommendation_response_from_domain_model():
-    # Verify that the DTO properly parses data from the Domain Model (ORM mode)
+
     domain_model = Recommendation(
         user_subscription_id=uuid4(),
         service_name="Netflix",

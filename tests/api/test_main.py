@@ -32,7 +32,7 @@ def test_dependency_injection_resolution():
         calc=calc
     )
     
-    # Verify that the correct singleton instances were injected
+
     assert use_case.user_repo is u_repo
     assert use_case.service_repo is srv_repo
     assert use_case.fuzzy_calculator is calc

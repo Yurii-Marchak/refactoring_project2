@@ -6,15 +6,12 @@ from src.main import app, service_repo_instance
 
 client = TestClient(app)
 
-# ==========================================
-# 1. НЕГАТИВНІ СЦЕНАРІЇ: JSON API (Підписки)
-# ==========================================
 
 def test_post_subscription_service_not_found():
     """Перевірка помилки 404, якщо вказано неіснуючий сервіс."""
     payload = {
         "user_id": str(uuid4()), 
-        "service_id": str(uuid4()), # Випадковий UUID, якого немає в базі
+        "service_id": str(uuid4()),
         "tier_name": "Basic"
     }
     response = client.post("/subscriptions", json=payload)
@@ -23,12 +20,12 @@ def test_post_subscription_service_not_found():
 
 def test_post_subscription_tier_not_found():
     """Перевірка помилки 400, якщо обрано неіснуючий тариф для реального сервісу."""
-    # Беремо перший існуючий сервіс із бази
+
     service = list(service_repo_instance._storage.values())[0]
     payload = {
         "user_id": str(uuid4()), 
         "service_id": str(service.id), 
-        "tier_name": "SuperMegaPremium" # Такого тарифу не існує
+        "tier_name": "SuperMegaPremium"
     }
     response = client.post("/subscriptions", json=payload)
     assert response.status_code == 400
@@ -46,9 +43,6 @@ def test_post_subscription_invalid_uuid_format():
     response = client.post("/subscriptions", json=payload)
     assert response.status_code == 422
 
-# ==========================================
-# 2. НЕГАТИВНІ СЦЕНАРІЇ: JSON API (Відгуки)
-# ==========================================
 
 def test_post_feedback_invalid_frequency():
     """Перевірка помилки 422, якщо частота використання виходить за межі 1-7."""
@@ -83,9 +77,6 @@ def test_post_feedback_invalid_date_format():
     response = client.post("/feedback", json=payload)
     assert response.status_code == 422
 
-# ==========================================
-# 3. НЕГАТИВНІ СЦЕНАРІЇ: JSON API (Аналітика та Користувачі)
-# ==========================================
 
 def test_get_recommendations_user_not_found():
     """Перевірка помилки 404, якщо користувача для аналітики не існує."""
@@ -103,9 +94,6 @@ def test_create_user_missing_email():
     response = client.post("/users") # Query-параметр email відсутній
     assert response.status_code == 422
 
-# ==========================================
-# 4. EDGE CASES: Web UI (Відсутність Cookie)
-# ==========================================
 
 def test_web_catalog_no_cookie_status_and_warning():
     """Перевірка: сторінка Каталогу віддає 200, але показує попередження, якщо немає кукі."""
@@ -117,7 +105,7 @@ def test_web_catalog_no_cookie_button_disabled():
     """Перевірка: кнопка 'Підписатися' заблокована (disabled), якщо немає кукі."""
     response = client.get("/web/catalog")
     assert response.status_code == 200
-    # Шукаємо атрибут disabled всередині HTML
+
     assert "disabled" in response.text
 
 def test_web_subscriptions_no_cookie():

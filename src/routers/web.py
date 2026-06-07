@@ -53,9 +53,10 @@ def dashboard(
 
 @router.post("/set-user")
 def set_user(user_id: str = Form(...)):
-    """Ендпоінт для імітації авторизації (встановлює cookie та редиректить назад)."""
+    """Ендпоінт для імітації авторизації."""
     response = RedirectResponse(url="/web/", status_code=303)
-    response.set_cookie(key="user_id", value=user_id, httponly=True)
+    # СТАЛО: Додано атрибути безпеки
+    response.set_cookie(key="user_id", value=user_id, httponly=True, secure=True, samesite="lax")
     return response
 
 @router.get("/catalog", response_class=HTMLResponse)

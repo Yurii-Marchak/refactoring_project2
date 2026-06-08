@@ -85,53 +85,55 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQWl8BvOcgJZCGWbN/kyEwG00C88Z9kOgzr9mR2D1R+TzZ3qQk0+o/62aU0yY/Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
-    // Ініціалізуємо змінні тільки якщо є рекомендації
-    {% if recommendations|length > 0 %}
-        // Отримуємо дані з Python через Jinja2 (перетворюємо масив у формат, зрозумілий для JS)
-        const labels = [
-            {% for rec in recommendations %}
-                "{{ rec.service_name }}",
-            {% endfor %}
-        ];
+    // Чекаємо, поки вся HTML-сторінка повністю завантажиться
+    document.addEventListener("DOMContentLoaded", function() {
         
-        const dataValues = [
-            {% for rec in recommendations %}
-                {{ rec.estimated_monthly_savings | float }},
-            {% endfor %}
-        ];
+        {% if recommendations|length > 0 %}
+            // Створюємо порожні масиви
+            const labels = [];
+            const dataValues = [];
 
-        // Налаштування та малювання кругового графіка
-        const ctx = document.getElementById('savingsChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Економія ($)',
-                    data: dataValues,
-                    backgroundColor: [
-                        '#198754', // Success green
-                        '#0dcaf0', // Info cyan
-                        '#ffc107', // Warning yellow
-                        '#d63384', // Pink
-                        '#6f42c1', // Purple
-                    ],
-                    borderWidth: 2,
-                    hoverOffset: 5
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { padding: 20, usePointStyle: true }
+            // Безпечно наповнюємо масиви через Jinja2
+            {% for rec in recommendations %}
+                labels.push("{{ rec.service_name }}");
+                // Використовуємо parseFloat для гарантованої конвертації рядка в число у JS
+                dataValues.push(parseFloat("{{ rec.estimated_monthly_savings }}"));
+            {% endfor %}
+
+            // Знаходимо canvas і малюємо графік
+            const canvasElement = document.getElementById('savingsChart');
+            
+            if (canvasElement) {
+                const ctx = canvasElement.getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Економія ($)',
+                            data: dataValues,
+                            backgroundColor: [
+                                '#198754', '#0dcaf0', '#ffc107', '#d63384', '#6f42c1'
+                            ],
+                            borderWidth: 2,
+                            hoverOffset: 5
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { padding: 20, usePointStyle: true }
+                            }
+                        },
+                        cutout: '70%'
                     }
-                },
-                cutout: '70%' // Робить дірку всередині бублика більшою для краси
+                });
             }
-        });
-    {% endif %}
+        {% endif %}
+        
+    });
 </script>
 {% endblock %}

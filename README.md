@@ -1,76 +1,141 @@
-SubOptima — Розумна оптимізація ваших підписок
-SubOptima — це сервіс для аналізу та оптимізації витрат на цифрові підписки. Система використовує підхід нечіткої логіки (Fuzzy Logic) для оцінки "Індексу корисності" (Utility Score) кожної підписки на основі частоти використання та необхідності, надаючи користувачам обґрунтовані рекомендації щодо економії.
+# SubOptima Platform
 
-Основні можливості
-Інтелектуальний аналіз: Розрахунок Utility Score на основі оцінок користувача.
+![CI](https://github.com/Yurii-Marchak/refactoring_project2/actions/workflows/ci-pipeline.yml/badge.svg)
+![CD](https://github.com/Yurii-Marchak/refactoring_project2/actions/workflows/deploy.yml/badge.svg)
+![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=Yurii-Marchak_refactoring_project2&metric=alert_status)
+![Coverage](https://sonarcloud.io/api/project_badges/measure?project=Yurii-Marchak_refactoring_project2&metric=coverage)
 
-Гнучка архітектура: Реалізація за принципами Clean/Hexagonal Architecture (розділення бізнес-логіки та інфраструктури).
+Educational subscription optimization project built with `FastAPI`, `MongoDB`, and a `Jinja2` frontend. The platform supports service cataloging, subscription management, user feedback collection, and intelligent analytics using Fuzzy Logic to generate cost-saving recommendations.
 
-Два режими зберігання: In-Memory (для швидких тестів) та MongoDB (для продакшену).
+## Highlights
+- Hexagonal Architecture (Ports and Adapters)
+- Two storage modes: `in_memory` (for fast CI testing) and `mongodb` (production)
+- Intelligent analytics using Fuzzy Logic (Utility Score calculation)
+- Service catalog and user subscription lifecycle management
+- Interactive Web UI with Chart.js visualizations
+- Comprehensive Unit, Integration, and Edge Case testing
+- GitHub Actions CI/CD with automatic SonarCloud analysis
 
-Веб-інтерфейс: Зручна панель керування на базі Jinja2.
+## Stack
+- Python 3.11
+- FastAPI
+- MongoDB / PyMongo
+- Pydantic v2
+- Jinja2 + Bootstrap 5 + Chart.js
+- Pytest + pytest-cov + mongomock
+- GitHub Actions
+- SonarQube / SonarCloud ready pipeline
 
-Висока тестова покритість: Проєкт покритий інтеграційними та юніт-тестами (pytest).
-
-Технологічний стек
-Backend: FastAPI
-
-Шаблонізатор: Jinja2 + Bootstrap 5
-
-База даних: MongoDB (через pymongo) або In-Memory сховище
-
-Валідація: Pydantic V2
-
-Тестування: pytest, pytest-cov, mongomock
-Структура проєкту
-Проєкт побудований за принципом гексагональної архітектури:
-
-Plaintext
+## Repository Structure
+```text
 src/
-├── models/           # Доменні моделі (сутності системи)
-├── routers/          # Primary Adapters (REST API та Web UI)
-├── schemas/          # DTOs (об'єкти передачі даних)
-├── services/
-│   ├── ports/        # Інтерфейси (репозиторії)
-│   └── use_cases/    # Бізнес-логіка (Fuzzy logic, Рекомендації)
-├── storage/
-│   ├── in_memory/    # Адаптер: In-Memory сховище
-│   └── mongodb/      # Адаптер: MongoDB сховище
-├── templates/        # HTML шаблони (Jinja2)
-├── static/           # Статичні файли (CSS/JS)
-└── main.py           # Точка входу та DI-контейнер
-tests/                # Набір тестів для всіх шарів системи
-Інструкція з запуску
-1. Попередні вимоги
-Python 3.11+
+  models/
+  routers/
+  schemas/
+  services/
+    ports/
+    use_cases/
+  storage/
+    in_memory/
+    mongodb/
+  templates/
+  static/
+tests/
+  api/
+  models/
+  storage/
+  use_cases/
+  utils/
+docs/
+  diagrams/
+  spec/
+.github/workflows/
 
-Встановлений pip
+## Local Backend Run
 
-2. Встановлення залежностей
-Клонуйте репозиторій та встановіть бібліотеки:
-
-Bash
+PowerShell
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
-3. Налаштування середовища
-Створіть файл .env у корені проєкту та вкажіть режим роботи:
+Copy-Item .env.example .env
+uvicorn src.main:app --reload
+Example local database URL (if using MongoDB mode):
 
 Фрагмент коду
-# Для In-Memory:
-STORAGE_TYPE=in_memory
+STORAGE_TYPE=mongodb
+MONGO_URI=mongodb://localhost:27017
+MONGO_DB_NAME=suboptima_db
+Swagger API Documentation:
 
-# Або для MongoDB:
-# STORAGE_TYPE=mongodb
-# MONGO_URI=mongodb://localhost:27017
-# MONGO_DB_NAME=suboptima_db
-4. Запуск сервера
-Запустіть додаток через uvicorn:
+http://127.0.0.1:8000/docs
 
-Bash
-uvicorn src.main:app --reload
-Після запуску перейдіть за адресою: http://127.0.0.1:8000/web/
+Web Interface:
 
-Тестування
-Проєкт має високе покриття коду тестами. Для запуску повного набору тестів виконайте:
+http://127.0.0.1:8000/web/
 
-Bash
-pytest --cov=src tests/
+Testing and Reports
+Run tests with XML and HTML coverage output:
+
+PowerShell
+pytest --cov=src --cov-report=term-missing --cov-report=xml --cov-report=html --junitxml=pytest-report.xml tests/
+Generated outputs:
+
+coverage.xml
+
+pytest-report.xml
+
+htmlcov/
+
+CI uploads these artifacts after every commit so they can be downloaded from the workflow run.
+
+SonarQube / SonarCloud
+The repository is configured for SonarCloud. The CI pipeline includes steps to upload coverage reports and evaluate the Quality Gate.
+To enable Sonar in GitHub Actions, the following secrets are configured:
+
+SONAR_TOKEN
+
+SONAR_HOST_URL (set to https://sonarcloud.io)
+
+Documentation
+Requirements
+
+Architecture
+
+Database
+
+API
+
+Frontend Guide
+
+Deployment
+
+Testing
+
+Quality
+
+Security Notes
+Pydantic V2 request validation
+
+Strict domain isolation (DTOs vs Domain Models)
+
+Environment-based configuration (Storage types toggle)
+
+Secure cookie transmission configuration for Web UI
+
+Architecture Notes
+The codebase explicitly uses:
+
+Hexagonal Architecture (Ports and Adapters) for persistence isolation
+
+Dependency Injection (FastAPI Depends) for injecting repositories into Use Cases
+
+Strategy/Factory pattern for Database environment switching
+
+Quality Goals
+Coverage target: 80%+ (Currently 120+ tests)
+
+Expanded unit and integration suite for edge cases and Fuzzy Logic math validation
+
+XML and HTML reports in CI artifacts
+
+Sonar Quality Gate support in pipeline

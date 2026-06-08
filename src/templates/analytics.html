@@ -82,25 +82,19 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQWl8BvOcgJZCGWbN/kyEwG00C88Z9kOgzr9mR2D1R+TzZ3qQk0+o/62aU0yY/Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <script>
-    // Чекаємо, поки вся HTML-сторінка повністю завантажиться
     document.addEventListener("DOMContentLoaded", function() {
-        
         {% if recommendations|length > 0 %}
-            // Створюємо порожні масиви
             const labels = [];
             const dataValues = [];
 
-            // Безпечно наповнюємо масиви через Jinja2
             {% for rec in recommendations %}
                 labels.push("{{ rec.service_name }}");
-                // Використовуємо parseFloat для гарантованої конвертації рядка в число у JS
                 dataValues.push(parseFloat("{{ rec.estimated_monthly_savings }}"));
             {% endfor %}
 
-            // Знаходимо canvas і малюємо графік
             const canvasElement = document.getElementById('savingsChart');
             
             if (canvasElement) {
@@ -112,9 +106,7 @@
                         datasets: [{
                             label: 'Економія ($)',
                             data: dataValues,
-                            backgroundColor: [
-                                '#198754', '#0dcaf0', '#ffc107', '#d63384', '#6f42c1'
-                            ],
+                            backgroundColor: ['#198754', '#0dcaf0', '#ffc107', '#d63384', '#6f42c1'],
                             borderWidth: 2,
                             hoverOffset: 5
                         }]
@@ -133,7 +125,6 @@
                 });
             }
         {% endif %}
-        
     });
 </script>
 {% endblock %}

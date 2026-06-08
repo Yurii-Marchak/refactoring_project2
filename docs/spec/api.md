@@ -1,4 +1,4 @@
-```markdown
+
 # Документація API (REST Endpoints)
 
 Цей документ описує структуру REST API системи SubOptima. Усі ендпоінти базуються на FastAPI та валідуються за допомогою Pydantic V2 схем (DTOs).

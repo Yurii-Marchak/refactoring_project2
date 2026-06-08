@@ -1,0 +1,34 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables (CRITICAL: ніколи не комітьте реальний .env)
+.env
+.env.local
+.env.*.local
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing and Coverage reports
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+pytest-report.xml
+junit.xml
+
+# Logs and Databases
+*.log
+*.sqlite3

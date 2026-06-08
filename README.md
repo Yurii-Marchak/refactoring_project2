@@ -50,92 +50,84 @@ docs/
   diagrams/
   spec/
 .github/workflows/
+```
 
 ## Local Backend Run
-
 PowerShell
+```text
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
 Copy-Item .env.example .env
 uvicorn src.main:app --reload
-Example local database URL (if using MongoDB mode):
+```
+## Example local database URL (if using MongoDB mode):
 
 Фрагмент коду
+```text
 STORAGE_TYPE=mongodb
 MONGO_URI=mongodb://localhost:27017
 MONGO_DB_NAME=suboptima_db
+```
 Swagger API Documentation:
 
-http://127.0.0.1:8000/docs
+- http://127.0.0.1:8000/docs
 
 Web Interface:
 
-http://127.0.0.1:8000/web/
+- http://127.0.0.1:8000/web/
 
-Testing and Reports
+## Testing and Reports
 Run tests with XML and HTML coverage output:
 
 PowerShell
+```text
 pytest --cov=src --cov-report=term-missing --cov-report=xml --cov-report=html --junitxml=pytest-report.xml tests/
+```
 Generated outputs:
 
-coverage.xml
+- coverage.xml
 
-pytest-report.xml
+- pytest-report.xml
 
-htmlcov/
+- htmlcov/
 
 CI uploads these artifacts after every commit so they can be downloaded from the workflow run.
 
-SonarQube / SonarCloud
+## SonarQube / SonarCloud
 The repository is configured for SonarCloud. The CI pipeline includes steps to upload coverage reports and evaluate the Quality Gate.
 To enable Sonar in GitHub Actions, the following secrets are configured:
 
-SONAR_TOKEN
+- SONAR_TOKEN
 
-SONAR_HOST_URL (set to https://sonarcloud.io)
+- SONAR_HOST_URL (set to https://sonarcloud.io)
 
-Documentation
-Requirements
+## Documentation
+- [Requirements](./docs/spec/requirements.md)
+- [Architecture](./docs/spec/architecture.md)
+- [Database](./docs/spec/database.md)
+- [API](./docs/spec/api.md)
+- [Frontend Guide](./docs/spec/frontend.md)
+- [Deployment](./docs/spec/deployment.md)
+- [Testing](./docs/spec/testing.md)
+- [Quality](./docs/spec/quality.md)
 
-Architecture
+## Security Notes
+- Pydantic V2 request validation
+- Strict domain isolation (DTOs vs Domain Models)
+- Environment-based configuration (Storage types toggle)
+- Secure cookie transmission configuration for Web UI
 
-Database
-
-API
-
-Frontend Guide
-
-Deployment
-
-Testing
-
-Quality
-
-Security Notes
-Pydantic V2 request validation
-
-Strict domain isolation (DTOs vs Domain Models)
-
-Environment-based configuration (Storage types toggle)
-
-Secure cookie transmission configuration for Web UI
-
-Architecture Notes
+## Architecture Notes
 The codebase explicitly uses:
 
-Hexagonal Architecture (Ports and Adapters) for persistence isolation
+- Hexagonal Architecture (Ports and Adapters) for persistence isolation
+- Dependency Injection (FastAPI Depends) for injecting repositories into Use Cases
 
-Dependency Injection (FastAPI Depends) for injecting repositories into Use Cases
+- Strategy/Factory pattern for Database environment switching
 
-Strategy/Factory pattern for Database environment switching
-
-Quality Goals
-Coverage target: 80%+ (Currently 120+ tests)
-
-Expanded unit and integration suite for edge cases and Fuzzy Logic math validation
-
-XML and HTML reports in CI artifacts
-
-Sonar Quality Gate support in pipeline
+## Quality Goals
+- Coverage target: 80%+ (Currently 130+ tests)
+- Expanded unit and integration suite for edge cases and Fuzzy Logic math validation
+- XML and HTML reports in CI artifacts
+- Sonar Quality Gate support in pipeline
